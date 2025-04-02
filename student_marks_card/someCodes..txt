@@ -1,0 +1,4 @@
+1)
+# clean the data from the database
+python manage.py shell -c "from student_marks.models import Marks; Marks.objects.all().delete()"
+

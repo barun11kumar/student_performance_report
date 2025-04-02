@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}परीक्षा तिथि के अनुसार अंक{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'teacher:dashboard' %}">
+                            <i class="fas fa-home"></i> डैशबोर्ड
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'teacher:visualize_data' %}">
+                            <i class="fas fa-chart-bar"></i> डेटा विज़ुअलाइज़ेशन
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'teacher:students' %}">
+                            <i class="fas fa-users"></i> छात्र
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout' %}">
+                            <i class="fas fa-sign-out-alt"></i> लॉगआउट
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">परीक्षा तिथि: {{ exam_date.date_of_exam|date:"d M Y" }}</h1>
+            </div>
+
+            <!-- Marks Table -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>क्रम</th>
+                                    <th>छात्र आईडी</th>
+                                    <th>नाम</th>
+                                    <th>कक्षा</th>
+                                    <th>कोर्स</th>
+                                    <th>भौतिक विज्ञान</th>
+                                    <th>रसायन विज्ञान</th>
+                                    <th>जीव विज्ञान</th>
+                                    <th>कुल अंक</th>
+                                    <th>प्रतिशत</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for student in student_marks %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ student.student_id }}</td>
+                                    <td>{{ student.full_name }}</td>
+                                    <td>{{ student.class }}</td>
+                                    <td>{{ student.course }}</td>
+                                    <td>
+                                        {% if 'Physics' in student.subjects %}
+                                            {{ student.subjects.Physics.score }}/{{ student.subjects.Physics.max_marks }}
+                                            ({{ student.subjects.Physics.percentage }}%)
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if 'Chemistry' in student.subjects %}
+                                            {{ student.subjects.Chemistry.score }}/{{ student.subjects.Chemistry.max_marks }}
+                                            ({{ student.subjects.Chemistry.percentage }}%)
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if 'Biology' in student.subjects %}
+                                            {{ student.subjects.Biology.score }}/{{ student.subjects.Biology.max_marks }}
+                                            ({{ student.subjects.Biology.percentage }}%)
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ student.total }}</td>
+                                    <td>{{ student.percentage }}%</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="10" class="text-center">कोई अंक नहीं मिला</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %} 

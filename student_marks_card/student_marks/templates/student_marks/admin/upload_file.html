@@ -1,0 +1,49 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block content %}
+<div class="content-main">
+    <h1>Upload Excel File</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Upload">
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const sessionSelect = document.getElementById('id_session');
+    const studentClassSelect = document.getElementById('id_student_class');
+    const courseSelect = document.getElementById('id_course');
+
+    sessionSelect.addEventListener('change', function() {
+        const sessionId = this.value;
+        fetch(`/get_student_classes/?session_id=${sessionId}`)
+            .then(response => response.json())
+            .then(data => {
+                studentClassSelect.innerHTML = '<option value="">---------</option>';
+                data.forEach(item => {
+                    studentClassSelect.innerHTML += `<option value="${item.id}">${item.name}</option>`;
+                });
+                // Reset course select
+                courseSelect.innerHTML = '<option value="">---------</option>';
+            })
+            .catch(error => console.error('Error:', error));
+    });
+
+    studentClassSelect.addEventListener('change', function() {
+        const studentClassId = this.value;
+        fetch(`/get_courses/?student_class_id=${studentClassId}`)
+            .then(response => response.json())
+            .then(data => {
+                courseSelect.innerHTML = '<option value="">---------</option>';
+                data.forEach(item => {
+                    courseSelect.innerHTML += `<option value="${item.id}">${item.name}</option>`;
+                });
+            })
+            .catch(error => console.error('Error:', error));
+    });
+});
+</script>
+{% endblock %} 

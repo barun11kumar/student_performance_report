@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}My Marks - Student Marks Card{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'student_dashboard' %}">
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'student_marks_view' %}">
+                            My Marks
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'student_visualize_data' %}">
+                            Visualize Data
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout' %}">
+                            Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">My Marks</h1>
+            </div>
+
+            <!-- Filters -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-6">
+                            <label for="session" class="form-label">Session</label>
+                            <select name="session" id="session" class="form-select">
+                                <option value="">All Sessions</option>
+                                {% for session in sessions %}
+                                    <option value="{{ session.id }}" {% if selected_session == session.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ session.session_name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="exam_date" class="form-label">Exam Date</label>
+                            <select name="exam_date" id="exam_date" class="form-select">
+                                <option value="">All Exam Dates</option>
+                                {% for exam_date in exam_dates %}
+                                    <option value="{{ exam_date.date_of_exam }}" {% if selected_exam_date == exam_date.date_of_exam|date:"Y-m-d" %}selected{% endif %}>
+                                        {{ exam_date.date_of_exam }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">Apply Filters</button>
+                            <a href="{% url 'student_marks_view' %}" class="btn btn-secondary">Clear Filters</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Marks</h5>
+                            <p class="card-text display-4">{{ total_marks }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Average Marks</h5>
+                            <p class="card-text display-4">{{ avg_marks }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Highest Marks</h5>
+                            <p class="card-text display-4">{{ max_marks }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Lowest Marks</h5>
+                            <p class="card-text display-4">{{ min_marks }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Student Info -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Student Information</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <p><strong>Student ID:</strong> {{ student.student_id }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <p><strong>Name:</strong> {{ student.full_name }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <p><strong>Class:</strong> {{ student.student_class.name }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <p><strong>Course:</strong> {{ student.course.name }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Marks Table -->
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Marks History</h5>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Marks</th>
+                                    <th>Exam Date</th>
+                                    <th>Session</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for mark in marks %}
+                                <tr>
+                                    <td>{{ mark.subject.name }}</td>
+                                    <td>{{ mark.marks }}</td>
+                                    <td>{{ mark.exam_date.date_of_exam }}</td>
+                                    <td>{{ mark.session.session_name }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No marks found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %} 

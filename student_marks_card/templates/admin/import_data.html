@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Import Data{% endblock %}
+
+{% block content %}
+    <h2>Import Data from Excel</h2>
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Upload</button>
+    </form>
+    <button><a href="{% url 'admin_dashboard' %}">Back to Admin Dashboard</a></button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const courseField = document.querySelector('select[name="course_selected"]');
+            const subjectsField = document.querySelector('select[name="subjects"]');
+
+            courseField.addEventListener('change', function() {
+                const selectedCourse = courseField.value;
+                let subjectsOptions = [];
+
+                if (selectedCourse === 'PCMB') {
+                    subjectsOptions = [
+                        {value: 'Physics', text: 'Physics'},
+                        {value: 'Chemistry', text: 'Chemistry'},
+                        {value: 'Biology', text: 'Biology'}
+                    ];
+                } else if (selectedCourse === 'PCMC') {
+                    subjectsOptions = [
+                        {value: 'Physics', text: 'Physics'},
+                        {value: 'Chemistry', text: 'Chemistry'},
+                        {value: 'Mathematics', text: 'Mathematics'}
+                    ];
+                }
+
+                subjectsField.innerHTML = '';
+                subjectsOptions.forEach(function(option) {
+                    const opt = document.createElement('option');
+                    opt.value = option.value;
+                    opt.text = option.text;
+                    subjectsField.appendChild(opt);
+                });
+            });
+        });
+    </script>
+{% endblock %}

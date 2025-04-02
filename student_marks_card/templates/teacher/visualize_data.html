@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %}Data Visualization{% endblock %}
+
+{% block content %}
+    <h2>Data Visualization</h2>
+
+    <h3>Average Score per Subject</h3>
+    {% if chart1 %}
+        <img src="{{ chart1 }}" alt="Average Score per Subject">
+    {% else %}
+        <p>No data to display.</p>
+    {% endif %}
+
+    <hr>
+
+    <h3>Distribution of Scores for a Subject</h3>
+    <form method="get">
+        <label for="subject_for_distribution">Select Subject:</label>
+        <select name="subject_for_distribution" id="subject_for_distribution">
+            {% for subject in subjects %}
+                <option value="{{ subject.name }}" {% if request.GET.subject_for_distribution == subject.name %}selected{% endif %}>{{ subject.name }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn">Show Distribution</button>
+        <button><a href="{% url 'admin_dashboard' %}">Back to Admin Dashboard</a></button>
+    </form>
+    {% if chart2 %}
+        <img src="{{ chart2 }}" alt="Distribution of Scores">
+    {% else %}
+        <p>No data to display for the selected subject.</p>
+    {% endif %}
+
+{% endblock %}

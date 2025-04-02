@@ -1,0 +1,104 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to the Academy</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Welcome to the Academy</h1>
+            <nav>
+                <ul>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Courses</a></li>
+                    <li><a href="#">Contact</a></li>
+                    <li><a href="{% url 'login' %}" class="btn">Login</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <section class="hero">
+        <div class="container">
+            <h2>Gain Knowledge and Skills</h2>
+            <p>Join our academy to enhance your knowledge and skills in various subjects.</p>
+            <a href="#" class="btn">Get Started</a>
+        </div>
+    </section>
+    <section class="features">
+        <div class="container">
+            <div class="feature">
+                <h3>Feature 1</h3>
+                <p>Description of feature 1.</p>
+            </div>
+            <div class="feature">
+                <h3>Feature 2</h3>
+                <p>Description of feature 2.</p>
+            </div>
+        </div>
+    </section>
+    <section class="courses">
+        <div class="container">
+            <h2>Our Courses</h2>
+            <div class="course">
+                <h3>Course 1</h3>
+                <p>Description of course 1.</p>
+            </div>
+            <div class="course">
+                <h3>Course 2</h3>
+                <p>Description of course 2.</p>
+            </div>
+            <div class="course">
+                <h3>Course 3</h3>
+                <p>Description of course 3.</p>
+            </div>
+            <div class="course">
+                <h3>Course 4</h3>
+                <p>Description of course 4.</p>
+            </div>
+        </div>
+    </section>
+    <section class="testimonials">
+        <div class="container">
+            <h2>What Our Students Say</h2>
+            <div class="testimonial">
+                <p>"Testimonial 1."</p>
+                <p>- Student 1</p>
+            </div>
+            <div class="testimonial">
+                <p>"Testimonial 2."</p>
+                <p>- Student 2</p>
+            </div>
+        </div>
+    </section>
+    <section class="contact">
+        <div class="container">
+            <h2>Contact Us</h2>
+            <form>
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email">
+                </div>
+                <div class="form-group">
+                    <label for="message">Message</label>
+                    <textarea id="message" name="message"></textarea>
+                </div>
+                <button type="submit" class="btn">Send</button>
+            </form>
+        </div>
+    </section>
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Academy. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

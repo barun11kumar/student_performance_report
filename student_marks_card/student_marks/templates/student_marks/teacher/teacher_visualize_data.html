@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Visualize Data{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'teacher:dashboard' %}">
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'teacher:visualize_data' %}">
+                            Visualize Data
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout' %}">
+                            Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Visualize Data</h1>
+            </div>
+
+            <!-- Filters -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="session" class="form-label">Session</label>
+                            <select name="session" id="session" class="form-select">
+                                <option value="">All Sessions</option>
+                                {% for session in sessions %}
+                                <option value="{{ session.id }}" {% if session.id|stringformat:"s" == selected_session %}selected{% endif %}>
+                                    {{ session.session_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="exam_date" class="form-label">Exam Date</label>
+                            <select name="exam_date" id="exam_date" class="form-select">
+                                <option value="">All Dates</option>
+                                {% for date in exam_dates %}
+                                <option value="{{ date.id }}" {% if date.id|stringformat:"s" == selected_exam_date %}selected{% endif %}>
+                                    {{ date.date_of_exam|date:"Y-m-d" }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            {% if selected_exam_date %}
+                            <a href="{% url 'teacher:exam_date_marks' %}?exam_date={{ selected_exam_date }}" class="btn btn-primary mt-2">
+                                <i class="fas fa-list"></i> View All Marks
+                            </a>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-3">
+                            <label for="class" class="form-label">Class</label>
+                            <select name="class" id="class" class="form-select">
+                                <option value="">All Classes</option>
+                                {% for class in classes %}
+                                <option value="{{ class.id }}" {% if class.id|stringformat:"s" == selected_class %}selected{% endif %}>
+                                    {{ class.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="course" class="form-label">Course</label>
+                            <select name="course" id="course" class="form-select">
+                                <option value="">All Courses</option>
+                                {% for course in courses %}
+                                <option value="{{ course.id }}" {% if course.id|stringformat:"s" == selected_course %}selected{% endif %}>
+                                    {{ course.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="student" class="form-label">Student</label>
+                            <select name="student" id="student" class="form-select">
+                                <option value="">All Students</option>
+                                {% for student in students %}
+                                <option value="{{ student.id }}" {% if student.id|stringformat:"s" == selected_student %}selected{% endif %}>
+                                    {{ student.full_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">Apply Filters</button>
+                            <a href="{% url 'teacher:visualize_data' %}" class="btn btn-secondary">Clear Filters</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {% if has_data %}
+            <!-- Charts -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Average Marks by Subject</h5>
+                            <canvas id="subjectChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Performance Distribution</h5>
+                            <canvas id="performanceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                कृपया डेटा देखने के लिए फ़िल्टर लागू करें।
+            </div>
+            {% endif %}
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+{% if has_data %}
+    // Subject Chart
+    const subjectCtx = document.getElementById('subjectChart').getContext('2d');
+    new Chart(subjectCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ subject_labels|safe }},
+            datasets: [{
+                label: 'Average Percentage',
+                data: {{ subject_data|safe }},
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: {
+                        display: true,
+                        text: 'Percentage (%)'
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'विषय-वार औसत प्रतिशत अंक'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.dataset.label}: ${context.parsed.y}%`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Performance Chart
+    const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+    new Chart(performanceCtx, {
+        type: 'pie',
+        data: {
+            labels: ['उत्कृष्ट (≥85%)', 'अच्छा (70-84%)', 'औसत (50-69%)', 'कमज़ोर (<50%)'],
+            datasets: [{
+                data: {{ performance_data|safe }},
+                backgroundColor: [
+                    'rgba(75, 192, 192, 0.5)',
+                    'rgba(54, 162, 235, 0.5)',
+                    'rgba(255, 206, 86, 0.5)',
+                    'rgba(255, 99, 132, 0.5)'
+                ],
+                borderColor: [
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(255, 99, 132, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                title: {
+                    display: true,
+                    text: 'प्रदर्शन वितरण (प्रतिशत के आधार पर)'
+                }
+            }
+        }
+    });
+{% endif %}
+</script>
+{% endblock %} 

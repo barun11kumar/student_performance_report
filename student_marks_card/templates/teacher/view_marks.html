@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}View Student Marks{% endblock %}
+
+{% block content %}
+    <h2>View Student Marks</h2>
+
+    <form method="get">
+        <label for="session">Session:</label>
+        <select name="session" id="session">
+            <option value="">All Sessions</option>
+            {% for session in sessions %}
+                <option value="{{ session.id }}" {% if request.GET.session|stringformat:'i' == session.id|stringformat:'i' %}selected{% endif %}>{{ session.session_name }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="exam_date">Date of Exam:</label>
+        <select name="exam_date" id="exam_date">
+            <option value="">All Dates</option>
+            {% for date in exam_dates %}
+                <option value="{{ date.id }}" {% if request.GET.exam_date|stringformat:'i' == date.id|stringformat:'i' %}selected{% endif %}>{{ date.date_of_exam }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="course">Course:</label>
+        <select name="course" id="course">
+            <option value="">All Courses</option>
+            {% for course in courses %}
+                <option value="{{ course.id }}" {% if request.GET.course|stringformat:'i' == course.id|stringformat:'i' %}selected{% endif %}>{{ course.name }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="student">Student:</label>
+        <select name="student" id="student">
+            <option value="">All Students</option>
+            {% for student in students %}
+                <option value="{{ student.id }}" {% if request.GET.student|stringformat:'i' == student.id|stringformat:'i' %}selected{% endif %}>{{ student.full_name }} ({{ student.student_id }})</option>
+            {% endfor %}
+        </select>
+
+        <label for="subject">Subject:</label>
+        <select name="subject" id="subject">
+            <option value="">All Subjects</option>
+            {% for subject in subjects %}
+                <option value="{{ subject.id }}" {% if request.GET.subject|stringformat:'i' == subject.id|stringformat:'i' %}selected{% endif %}>{{ subject.name }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="search">Search Student:</label>
+        <input type="text" name="search" id="search" placeholder="Student ID or Name" value="{{ request.GET.search }}">
+
+        <button type="submit" class="btn">Filter/Search</button>
+    </form>
+
+    <hr>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Session</th>
+                <th>Date of Exam</th>
+                <th>Class</th>
+                <th>Course</th>
+                <th>Student ID</th>
+                <th>Full Name</th>
+                <th>Subject</th>
+                <th>Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for mark in marks %}
+                <tr>
+                    <td>{{ mark.session }}</td>
+                    <td>{{ mark.exam_date }}</td>
+                    <td>{{ mark.student.student_class }}</td>
+                    <td>{{ mark.student.course }}</td>
+                    <td>{{ mark.student.student_id }}</td>
+                    <td>{{ mark.student.full_name }}</td>
+                    <td>{{ mark.subject }}</td>
+                    <td>{{ mark.score }}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="8">No marks found based on the filter criteria.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p><a href="{% url 'visualize_data' %}">Visualize Data</a></p>
+{% endblock %}

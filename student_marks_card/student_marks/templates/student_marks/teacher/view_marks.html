@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}View Student Marks{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'teacher:dashboard' %}">
+                            <i class="fas fa-home"></i> डैशबोर्ड
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'teacher:visualize_data' %}">
+                            <i class="fas fa-chart-bar"></i> डेटा विज़ुअलाइज़ेशन
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'teacher:students' %}">
+                            <i class="fas fa-users"></i> छात्र
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout' %}">
+                            <i class="fas fa-sign-out-alt"></i> लॉगआउट
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">छात्र अंक</h1>
+            </div>
+
+            <!-- Filters -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="session" class="form-label">सत्र</label>
+                            <select name="session" id="session" class="form-select">
+                                <option value="">सभी सत्र</option>
+                                {% for session in sessions %}
+                                <option value="{{ session.id }}" {% if request.GET.session == session.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ session.session_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="exam_date" class="form-label">परीक्षा तिथि</label>
+                            <select name="exam_date" id="exam_date" class="form-select">
+                                <option value="">सभी तिथियां</option>
+                                {% for date in exam_dates %}
+                                <option value="{{ date.id }}" {% if request.GET.exam_date == date.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ date.date_of_exam|date:"d-m-Y" }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="course" class="form-label">कोर्स</label>
+                            <select name="course" id="course" class="form-select">
+                                <option value="">सभी कोर्स</option>
+                                {% for course in courses %}
+                                <option value="{{ course.id }}" {% if request.GET.course == course.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ course.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="student" class="form-label">छात्र</label>
+                            <select name="student" id="student" class="form-select">
+                                <option value="">सभी छात्र</option>
+                                {% for student in students %}
+                                <option value="{{ student.id }}" {% if request.GET.student == student.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ student.full_name }} ({{ student.student_id }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">फ़िल्टर लागू करें</button>
+                            <a href="{% url 'teacher:dashboard' %}" class="btn btn-secondary">फ़िल्टर हटाएं</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Marks Tables -->
+            {% if grouped_marks %}
+                {% for exam_date, students in grouped_marks.items %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="card-title mb-0">परीक्षा तिथि: {{ exam_date|date:"d-m-Y" }}</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>क्रम</th>
+                                        <th>छात्र आईडी</th>
+                                        <th>नाम</th>
+                                        <th>भौतिक विज्ञान</th>
+                                        <th>रसायन विज्ञान</th>
+                                        <th>जीव विज्ञान</th>
+                                        <th>कुल अंक</th>
+                                        <th>अधिकतम अंक</th>
+                                        <th>प्रतिशत</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for student_id, data in students.items %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ data.student_id }}</td>
+                                        <td>
+                                            <a href="{% url 'teacher:student_analysis' student_id=data.student_id %}" class="text-decoration-none">
+                                                {{ data.full_name }}
+                                                <i class="fas fa-chart-line ms-1"></i>
+                                            </a>
+                                        </td>
+                                        <td>{{ data.subjects.Physics|default:0 }}/180</td>
+                                        <td>{{ data.subjects.Chemistry|default:0 }}/180</td>
+                                        <td>{{ data.subjects.Biology|default:0 }}/360</td>
+                                        <td>{{ data.total_marks }}</td>
+                                        <td>{{ data.max_total }}</td>
+                                        <td>{{ data.percentage|floatformat:2 }}%</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="alert alert-info">
+                    कोई अंक नहीं मिला। कृपया फ़िल्टर का चयन करें।
+                </div>
+            {% endif %}
+        </main>
+    </div>
+</div>
+{% endblock %}

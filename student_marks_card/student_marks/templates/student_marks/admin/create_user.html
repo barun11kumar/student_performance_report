@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Create User{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Create New User</h3>
+                </div>
+                <div class="card-body">
+                    <!-- Role Selection -->
+                    <div class="mb-4">
+                        <label class="form-label">Select Role:</label>
+                        <div class="btn-group" role="group">
+                            <a href="?role=Teacher" class="btn btn-outline-primary {% if role == 'Teacher' %}active{% endif %}">
+                                Teacher
+                            </a>
+                            <a href="?role=Student" class="btn btn-outline-primary {% if role == 'Student' %}active{% endif %}">
+                                Student
+                            </a>
+                        </div>
+                    </div>
+
+                    <form method="post" id="userForm">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-primary">Create User</button>
+                            <a href="{% url 'custom_admin:admin_dashboard' %}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle dynamic form fields for Student registration
+    const sessionField = document.getElementById('id_session');
+    const studentClassField = document.getElementById('id_student_class');
+    const courseField = document.getElementById('id_course');
+
+    if (sessionField) {
+        sessionField.addEventListener('change', function() {
+            const sessionId = this.value;
+            if (sessionId) {
+                fetch(`/get-student-classes/?session_id=${sessionId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        studentClassField.innerHTML = '<option value="">---------</option>';
+                        data.forEach(item => {
+                            studentClassField.innerHTML += `<option value="${item.id}">${item.name}</option>`;
+                        });
+                        courseField.innerHTML = '<option value="">---------</option>';
+                    });
+            }
+        });
+    }
+
+    if (studentClassField) {
+        studentClassField.addEventListener('change', function() {
+            const classId = this.value;
+            if (classId) {
+                fetch(`/get-courses/?student_class_id=${classId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        courseField.innerHTML = '<option value="">---------</option>';
+                        data.forEach(item => {
+                            courseField.innerHTML += `<option value="${item.id}">${item.name}</option>`;
+                        });
+                    });
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
+{% endblock %} 

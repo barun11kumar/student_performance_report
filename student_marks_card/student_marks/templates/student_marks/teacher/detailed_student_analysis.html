@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}विस्तृत छात्र विश्लेषण - {{ student.full_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'teacher:dashboard' %}">
+                            डैशबोर्ड
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'teacher:visualize_data' %}">
+                            डेटा विज़ुअलाइज़ेशन
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout' %}">
+                            लॉगआउट
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">{{ student.full_name }} का विस्तृत विश्लेषण</h1>
+            </div>
+
+            <!-- Overall Progress -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">समग्र प्रगति</h5>
+                            <canvas id="timelineChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subject-wise Progress -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">विषय-वार प्रगति</h5>
+                            <canvas id="subjectProgressChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">कक्षा तुलना</h5>
+                            <canvas id="classComparisonChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Analysis -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">सुधार के क्षेत्र</h5>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>विषय</th>
+                                            <th>औसत प्रतिशत</th>
+                                            <th>स्थिति</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for subject, avg in subject_averages.items %}
+                                        <tr>
+                                            <td>{{ subject }}</td>
+                                            <td>{{ avg }}%</td>
+                                            <td>
+                                                {% if avg >= 85 %}
+                                                <span class="badge bg-success">उत्कृष्ट</span>
+                                                {% elif avg >= 70 %}
+                                                <span class="badge bg-primary">अच्छा</span>
+                                                {% elif avg >= 50 %}
+                                                <span class="badge bg-warning">औसत</span>
+                                                {% else %}
+                                                <span class="badge bg-danger">सुधार की आवश्यकता</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">हाल का प्रदर्शन</h5>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>दिनांक</th>
+                                            <th>विषय</th>
+                                            <th>प्रतिशत</th>
+                                            <th>परसेंटाइल</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for mark in recent_performance %}
+                                        <tr>
+                                            <td>{{ mark.date }}</td>
+                                            <td>{{ mark.subject }}</td>
+                                            <td>{{ mark.percentage }}%</td>
+                                            <td>{{ student_percentiles|get_item:mark.date_subject|default:"N/A" }}%</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Timeline Chart
+    const timelineCtx = document.getElementById('timelineChart').getContext('2d');
+    new Chart(timelineCtx, {
+        type: 'line',
+        data: {
+            labels: {{ timeline_labels|safe }},
+            datasets: [{
+                label: 'कुल अंक',
+                data: {{ timeline_total_marks|safe }},
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1,
+                yAxisID: 'y'
+            },
+            {
+                label: 'प्रतिशत',
+                data: {{ timeline_percentages|safe }},
+                borderColor: 'rgb(255, 99, 132)',
+                tension: 0.1,
+                yAxisID: 'y1'
+            }]
+        },
+        options: {
+            responsive: true,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: 'कुल अंक'
+                    },
+                    beginAtZero: true,
+                    max: Math.max(...{{ timeline_max_marks|safe }}) + 50
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'प्रतिशत (%)'
+                    },
+                    beginAtZero: true,
+                    max: 100,
+                    grid: {
+                        drawOnChartArea: false
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'समय के साथ प्रदर्शन'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.dataset.label || '';
+                            const value = context.parsed.y;
+                            const maxMarks = {{ timeline_max_marks|safe }}[context.dataIndex];
+                            
+                            if (label === 'कुल अंक') {
+                                return `${label}: ${value}/${maxMarks}`;
+                            }
+                            return `${label}: ${value.toFixed(2)}%`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Subject Progress Chart
+    const subjectProgressData = {{ subject_progress|safe }};
+    const subjectProgressCtx = document.getElementById('subjectProgressChart').getContext('2d');
+    new Chart(subjectProgressCtx, {
+        type: 'line',
+        data: {
+            labels: Object.keys(subjectProgressData[Object.keys(subjectProgressData)[0]]),
+            datasets: Object.keys(subjectProgressData).map(subject => ({
+                label: subject,
+                data: subjectProgressData[subject].map(item => item.percentage),
+                borderColor: getRandomColor(),
+                tension: 0.1
+            }))
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: {
+                        display: true,
+                        text: 'प्रतिशत (%)'
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'विषय-वार प्रगति'
+                }
+            }
+        }
+    });
+
+    // Helper function for random colors
+    function getRandomColor() {
+        const letters = '0123456789ABCDEF';
+        let color = '#';
+        for (let i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+</script>
+{% endblock %} 
