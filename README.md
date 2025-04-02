@@ -1,4 +1,4 @@
-# CSR_2 Project
+# Student Performance check Project
 
 ## Overview
 This project is designed to display the performance of the students. Admin can upload the file in Excel format, and teachers can visualize all these.
