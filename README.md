@@ -2,10 +2,13 @@
 
 ## Overview
 This project is designed to display the performance of the students. Admin can upload the file in Excel format, and teachers can visualize all these.
+debug.log will be storing all logs and error for the further debugging.
+Used: #Django, #pandas, #browser_auto_reload, #crispy_form, #bootstrap4
 
 ## Features
 - Admin can upload student performance data in Excel format.
 - Teachers can view and analyze student performance.
+- Django middleware authetication
 - User-friendly interface for data visualization.
 
 ## Installation
